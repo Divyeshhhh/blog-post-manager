@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import type { CreateBlogPost } from '../types/BlogPost';
 
 interface Props {
@@ -9,19 +9,9 @@ interface Props {
 }
 
 export const BlogPostForm: React.FC<Props> = ({ initialData, onSubmit, onCancel, isEditing = false }) => {
-  const [formData, setFormData] = useState<CreateBlogPost>({
-    title: '',
-    content: '',
-    author: '',
-  });
+  const [formData, setFormData] = useState<CreateBlogPost>(() => initialData ?? { title: '', content: '' });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData(initialData);
-    }
-  }, [initialData]);
 
   const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
@@ -38,11 +28,7 @@ export const BlogPostForm: React.FC<Props> = ({ initialData, onSubmit, onCancel,
       newErrors.content = 'Content must be at least 10 characters';
     }
 
-    if (!formData.author.trim()) {
-      newErrors.author = 'Author is required';
-    } else if (formData.author.length > 100) {
-      newErrors.author = 'Author name cannot exceed 100 characters';
-    }
+    // Author is derived from authenticated user on the server; no client-side author field
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,20 +66,7 @@ export const BlogPostForm: React.FC<Props> = ({ initialData, onSubmit, onCancel,
         {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
       </div>
 
-      <div>
-        <label htmlFor="author" className="block text-sm font-medium text-gray-700 mb-1">
-          Author
-        </label>
-        <input
-          type="text"
-          id="author"
-          name="author"
-          value={formData.author}
-          onChange={handleChange}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        {errors.author && <p className="mt-1 text-sm text-red-600">{errors.author}</p>}
-      </div>
+      {/* Author is set by server based on authenticated user; no author input here */}
 
       <div>
         <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">

@@ -14,10 +14,6 @@ namespace BlogPostApi.Validators
             RuleFor(x => x.Content)
                 .NotEmpty().WithMessage("Content is required")
                 .MinimumLength(10).WithMessage("Content must be at least 10 characters");
-
-            RuleFor(x => x.Author)
-                .NotEmpty().WithMessage("Author is required")
-                .MaximumLength(100).WithMessage("Author name cannot exceed 100 characters");
         }
     }
 
@@ -32,10 +28,6 @@ namespace BlogPostApi.Validators
             RuleFor(x => x.Content)
                 .NotEmpty().WithMessage("Content is required")
                 .MinimumLength(10).WithMessage("Content must be at least 10 characters");
-
-            RuleFor(x => x.Author)
-                .NotEmpty().WithMessage("Author is required")
-                .MaximumLength(100).WithMessage("Author name cannot exceed 100 characters");
         }
     }
 }

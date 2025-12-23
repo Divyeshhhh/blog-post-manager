@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { BlogPost, UpdateBlogPost } from '../types/BlogPost';
@@ -19,7 +20,8 @@ export const EditPostPage: React.FC = () => {
     try {
       const data = await blogPostApi.getById(parseInt(id));
       setPost(data);
-    } catch (err) {
+    } catch (err: unknown) {
+      console.error(err);
       alert('Failed to load post. Redirecting to home.');
       navigate('/');
     } finally {
@@ -32,27 +34,46 @@ export const EditPostPage: React.FC = () => {
     try {
       await blogPostApi.update(parseInt(id), data);
       navigate('/');
-    } catch (err) {
-      alert('Failed to update post. Please try again.');
+    } catch (err: unknown) {
       console.error(err);
+      alert('Failed to update post. Please try again.');
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
 
   if (!post) {
-    return <div className="flex justify-center items-center min-h-screen">Post not found</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Post not found
+      </div>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="min-h-screen bg-gray-100">
+      <nav className="bg-white shadow-sm mb-6">
+        <div className="container mx-auto px-4 py-4">
+          <button
+            onClick={() => navigate('/')}
+            className="text-blue-600 hover:text-blue-800 font-medium"
+          >
+            ← Back to Feed
+          </button>
+        </div>
+      </nav>
+
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
         <h1 className="text-4xl font-bold text-gray-800 mb-8">Edit Post</h1>
         <div className="bg-white rounded-lg shadow-md p-6">
           <BlogPostForm
-            initialData={{ title: post.title, content: post.content, author: post.author }}
+            initialData={{ title: post.title, content: post.content }}
             onSubmit={handleSubmit}
             onCancel={() => navigate('/')}
             isEditing

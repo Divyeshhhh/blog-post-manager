@@ -19,6 +19,7 @@ export const ViewPostPage: React.FC = () => {
       const data = await blogPostApi.getById(parseInt(id));
       setPost(data);
     } catch (err) {
+      console.error(err);
       alert('Failed to load post. Redirecting to home.');
       navigate('/');
     } finally {
@@ -66,27 +67,32 @@ export const ViewPostPage: React.FC = () => {
             <p className="text-gray-700 whitespace-pre-wrap">{post.content}</p>
           </div>
           <div className="mt-8 flex gap-2">
-            <button
-              onClick={() => navigate(`/edit/${post.id}`)}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-            >
-              Edit Post
-            </button>
-            <button
-              onClick={async () => {
-                if (window.confirm('Are you sure you want to delete this post?')) {
-                  try {
-                    await blogPostApi.delete(post.id);
-                    navigate('/');
-                  } catch (err) {
-                    alert('Failed to delete post.');
-                  }
-                }
-              }}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-            >
-              Delete Post
-            </button>
+            {post.isOwner && (
+              <>
+                <button
+                  onClick={() => navigate(`/edit/${post.id}`)}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Edit Post
+                </button>
+                <button
+                  onClick={async () => {
+                    if (window.confirm('Are you sure you want to delete this post?')) {
+                      try {
+                        await blogPostApi.delete(post.id);
+                        navigate('/');
+                      } catch (err) {
+                        console.error(err);
+                        alert('Failed to delete post.');
+                      }
+                    }
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+                >
+                  Delete Post
+                </button>
+              </>
+            )}
           </div>
         </article>
       </div>

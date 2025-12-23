@@ -1,6 +1,8 @@
 using BlogPostApi.DTOs;
 using BlogPostApi.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BlogPostApi.Controllers
 {
@@ -17,12 +19,19 @@ namespace BlogPostApi.Controllers
             _logger = logger;
         }
 
+        private int GetUserId()
+        {
+            return int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        }
+
+        // Anyone can view posts (public feed)
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BlogPostResponseDto>>> GetAllPosts()
         {
             try
             {
-                var posts = await _blogPostService.GetAllPostsAsync();
+                int? currentUserId = User.Identity?.IsAuthenticated == true ? GetUserId() : null;
+                var posts = await _blogPostService.GetAllPostsAsync(currentUserId);
                 return Ok(posts);
             }
             catch (Exception ex)
@@ -32,12 +41,30 @@ namespace BlogPostApi.Controllers
             }
         }
 
+        [HttpGet("user/{userId}")]
+        public async Task<ActionResult<IEnumerable<BlogPostResponseDto>>> GetUserPosts(int userId)
+        {
+            try
+            {
+                int? currentUserId = User.Identity?.IsAuthenticated == true ? GetUserId() : null;
+                var posts = await _blogPostService.GetUserPostsAsync(userId, currentUserId);
+                return Ok(posts);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving posts for user with ID: {UserId}", userId);
+                return StatusCode(500, "An error occurred while retrieving the user's posts");
+            }
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<BlogPostResponseDto>> GetPost(int id)
         {
             try
             {
-                var post = await _blogPostService.GetPostByIdAsync(id);
+                int? currentUserId = User.Identity?.IsAuthenticated == true ? GetUserId() : null;
+                var post = await _blogPostService.GetPostByIdAsync(id, currentUserId);
+
                 if (post == null)
                     return NotFound($"Blog post with ID {id} not found");
 
@@ -50,12 +77,16 @@ namespace BlogPostApi.Controllers
             }
         }
 
+        // Must be logged in to create
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<BlogPostResponseDto>> CreatePost([FromBody] CreateBlogPostDto dto)
         {
             try
             {
-                var post = await _blogPostService.CreatePostAsync(dto);
+                var userId = GetUserId();
+                var post = await _blogPostService.CreatePostAsync(dto, userId);
+
                 return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);
             }
             catch (Exception ex)
@@ -65,16 +96,24 @@ namespace BlogPostApi.Controllers
             }
         }
 
+        // Must be logged in to update (service enforces ownership)
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<BlogPostResponseDto>> UpdatePost(int id, [FromBody] UpdateBlogPostDto dto)
         {
             try
             {
-                var post = await _blogPostService.UpdatePostAsync(id, dto);
+                var userId = GetUserId();
+                var post = await _blogPostService.UpdatePostAsync(id, dto, userId);
+
                 if (post == null)
                     return NotFound($"Blog post with ID {id} not found");
 
                 return Ok(post);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (Exception ex)
             {
@@ -83,16 +122,24 @@ namespace BlogPostApi.Controllers
             }
         }
 
+        // Must be logged in to delete (service enforces ownership)
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult> DeletePost(int id)
         {
             try
             {
-                var result = await _blogPostService.DeletePostAsync(id);
+                var userId = GetUserId();
+                var result = await _blogPostService.DeletePostAsync(id, userId);
+
                 if (!result)
                     return NotFound($"Blog post with ID {id} not found");
 
                 return NoContent();
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Forbid(ex.Message);
             }
             catch (Exception ex)
             {
