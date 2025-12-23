@@ -1,0 +1,57 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: blogpost-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: blogpostdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - blogpost-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d blogpostdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: blogpost-backend
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database=blogpostdb;Username=postgres;Password=postgres
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - blogpost-network
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: blogpost-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - blogpost-network
+
+volumes:
+  postgres_data:
+
+networks:
+  blogpost-network:
+    driver: bridge

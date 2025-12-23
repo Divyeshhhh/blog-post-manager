@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="BlogPostApi.Tests/BlogPostApi.Tests.csproj" />
+  <Project Path="BlogPostApi/BlogPostApi.csproj" />
+</Solution>
