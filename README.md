@@ -5,6 +5,12 @@ The application delivers complete end-to-end CRUD functionality for blog posts, 
 
 ---
 
+ ### Project Demo (Live Walkthrough)
+
+![Website Demo](assets/demo-gif.gif)
+
+---
+
 ## Table of Contents
 - [Project Overview](#project-overview)
 - [Architecture Summary](#architecture-summary)
