@@ -40,8 +40,8 @@ export const BlogPostCard: React.FC<Props> = ({ post, onDelete }) => {
         </div>
 
         {/* Post Content */}
-        <h2 className="text-xl font-bold text-gray-800 mb-2">{post.title}</h2>
-        <p className="text-gray-700 mb-4 line-clamp-3">{post.content}</p>
+        <h2 className="text-xl font-bold text-gray-800 mb-2 break-words [overflow-wrap:anywhere]">{post.title}</h2>
+        <p className="text-gray-700 mb-4 line-clamp-3 break-words [overflow-wrap:anywhere]">{post.content}</p>
 
         {/* Action Buttons */}
         <div className="flex gap-2 flex-wrap">

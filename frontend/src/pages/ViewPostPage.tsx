@@ -55,7 +55,7 @@ export const ViewPostPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-x-hidden">
         <div className="flex flex-col items-center">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
           <p className="mt-4 text-xl text-gray-700 font-medium">Loading post...</p>
@@ -104,7 +104,7 @@ export const ViewPostPage: React.FC = () => {
         <article className="bg-white rounded-3xl shadow-xl p-8 md:p-12 border border-gray-100">
           {/* Post Header */}
           <div className="mb-8 pb-8 border-b border-gray-200">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6 leading-tight break-words [overflow-wrap:anywhere]">
               {post.title}
             </h1>
             
@@ -156,7 +156,7 @@ export const ViewPostPage: React.FC = () => {
 
           {/* Post Content */}
           <div className="prose prose-lg max-w-none mb-8">
-            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-lg">
+            <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-lg break-words [overflow-wrap:anywhere]">
               {post.content}
             </p>
           </div>

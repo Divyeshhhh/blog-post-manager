@@ -138,19 +138,6 @@ export const BlogPostForm: React.FC<Props> = ({ initialData, onSubmit, onCancel,
         </p>
       </div>
 
-      {/* Preview Badge */}
-      {formData.title && formData.content.length >= contentMinLength && (
-        <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-xl p-4">
-          <div className="flex items-center gap-2 text-green-700 font-semibold mb-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Your post looks great!
-          </div>
-          <p className="text-sm text-gray-600">Ready to share your thoughts with the community.</p>
-        </div>
-      )}
-
       {/* Action Buttons */}
       <div className="flex gap-3 pt-4 flex-wrap">
         <button

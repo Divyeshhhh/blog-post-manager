@@ -110,7 +110,7 @@ export const EditPostPage: React.FC = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           <div className="text-sm text-blue-800">
-            <p className="font-semibold mb-1">You're editing: "{post.title}"</p>
+            <p className="font-semibold mb-1 break-words [overflow-wrap:anywhere]">You're editing: "{post.title}"</p>
             <p>Your changes will be saved and visible to everyone once you update.</p>
           </div>
         </div>
