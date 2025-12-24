@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export const RegisterPage: React.FC = () => {
   const { register } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -40,6 +42,12 @@ export const RegisterPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
+        <button
+          onClick={() => navigate('/')}
+          className="mb-6 text-blue-600 hover:text-blue-800 font-semibold"
+        >
+          ← Back to Home
+        </button>
         <h1 className="text-2xl font-bold mb-4">Register</h1>
         {error && <div className="mb-4 text-sm text-red-600">{error}</div>}
         

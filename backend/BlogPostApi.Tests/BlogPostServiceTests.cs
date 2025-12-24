@@ -15,6 +15,8 @@ namespace BlogPostApi.Tests
         private readonly Mock<ILogger<BlogPostService>> _loggerMock;
         private readonly ApplicationDbContext _context;
         private readonly BlogPostService _service;
+        private readonly Models.User _user;
+        private readonly int _userId;
 
         public BlogPostServiceTests()
         {
@@ -25,6 +27,18 @@ namespace BlogPostApi.Tests
             _context = new ApplicationDbContext(options);
             _loggerMock = new Mock<ILogger<BlogPostService>>();
             _service = new BlogPostService(_context, _loggerMock.Object);
+            // Create a default user for tests
+            _user = new Models.User
+            {
+                Username = "testuser",
+                Email = "test@example.com",
+                PasswordHash = "hash",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Users.Add(_user);
+            _context.SaveChanges();
+            _userId = _user.Id;
         }
 
         [Fact]
@@ -34,18 +48,17 @@ namespace BlogPostApi.Tests
             var dto = new CreateBlogPostDto
             {
                 Title = "Test Post",
-                Content = "Test content for the blog post",
-                Author = "Test Author"
+                Content = "Test content for the blog post"
             };
 
             // Act
-            var result = await _service.CreatePostAsync(dto);
+            var result = await _service.CreatePostAsync(dto, _userId);
 
             // Assert
             result.Should().NotBeNull();
             result.Title.Should().Be(dto.Title);
             result.Content.Should().Be(dto.Content);
-            result.Author.Should().Be(dto.Author);
+            result.Author.Should().Be(_user.Username);
             result.Id.Should().BeGreaterThan(0);
         }
 
@@ -54,8 +67,8 @@ namespace BlogPostApi.Tests
         {
             // Arrange
             _context.BlogPosts.AddRange(
-                new BlogPost { Title = "Post 1", Content = "Content 1", Author = "Author 1", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
-                new BlogPost { Title = "Post 2", Content = "Content 2", Author = "Author 2", CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+                new BlogPost { Title = "Post 1", Content = "Content 1", Author = _user.Username, UserId = _userId, User = _user, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new BlogPost { Title = "Post 2", Content = "Content 2", Author = _user.Username, UserId = _userId, User = _user, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
             );
             await _context.SaveChangesAsync();
 
@@ -74,7 +87,9 @@ namespace BlogPostApi.Tests
             {
                 Title = "Test Post",
                 Content = "Test content",
-                Author = "Test Author",
+                Author = _user.Username,
+                UserId = _userId,
+                User = _user,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -97,22 +112,24 @@ namespace BlogPostApi.Tests
             {
                 Title = "Original Title",
                 Content = "Original content",
-                Author = "Original Author",
+                Author = _user.Username,
+                UserId = _userId,
+                User = _user,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
             _context.BlogPosts.Add(post);
             await _context.SaveChangesAsync();
 
+
             var updateDto = new UpdateBlogPostDto
             {
                 Title = "Updated Title",
-                Content = "Updated content",
-                Author = "Updated Author"
+                Content = "Updated content"
             };
 
             // Act
-            var result = await _service.UpdatePostAsync(post.Id, updateDto);
+            var result = await _service.UpdatePostAsync(post.Id, updateDto, _userId);
 
             // Assert
             result.Should().NotBeNull();
@@ -128,7 +145,9 @@ namespace BlogPostApi.Tests
             {
                 Title = "Test Post",
                 Content = "Test content",
-                Author = "Test Author",
+                Author = _user.Username,
+                UserId = _userId,
+                User = _user,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
@@ -136,7 +155,7 @@ namespace BlogPostApi.Tests
             await _context.SaveChangesAsync();
 
             // Act
-            var result = await _service.DeletePostAsync(post.Id);
+            var result = await _service.DeletePostAsync(post.Id, _userId);
 
             // Assert
             result.Should().BeTrue();
@@ -148,10 +167,143 @@ namespace BlogPostApi.Tests
         public async Task DeletePostAsync_ShouldReturnFalse_WhenPostDoesNotExist()
         {
             // Act
-            var result = await _service.DeletePostAsync(999);
+            var result = await _service.DeletePostAsync(999, _userId);
 
             // Assert
             result.Should().BeFalse();
+        }
+
+        [Fact]
+        public async Task GetUserPostsAsync_ShouldReturnOnlyUserPosts()
+        {
+            // Arrange
+            var otherUser = new Models.User
+            {
+                Username = "other",
+                Email = "other@example.com",
+                PasswordHash = "h",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Users.Add(otherUser);
+            await _context.SaveChangesAsync();
+
+            _context.BlogPosts.AddRange(
+                new BlogPost { Title = "A", Content = "1", Author = _user.Username, UserId = _userId, User = _user, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new BlogPost { Title = "B", Content = "2", Author = otherUser.Username, UserId = otherUser.Id, User = otherUser, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow },
+                new BlogPost { Title = "C", Content = "3", Author = _user.Username, UserId = _userId, User = _user, CreatedAt = DateTime.UtcNow, UpdatedAt = DateTime.UtcNow }
+            );
+            await _context.SaveChangesAsync();
+
+            // Act
+            var result = await _service.GetUserPostsAsync(_userId);
+
+            // Assert
+            result.Should().OnlyContain(r => r.UserId == _userId);
+            result.Should().HaveCount(2);
+        }
+
+        [Fact]
+        public async Task UpdatePostAsync_ShouldThrowUnauthorized_WhenNotOwner()
+        {
+            // Arrange: create another user and a post owned by them
+            var otherUser = new Models.User
+            {
+                Username = "other2",
+                Email = "other2@example.com",
+                PasswordHash = "h",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Users.Add(otherUser);
+            await _context.SaveChangesAsync();
+
+            var post = new BlogPost
+            {
+                Title = "Not Yours",
+                Content = "Nope",
+                Author = otherUser.Username,
+                UserId = otherUser.Id,
+                User = otherUser,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.BlogPosts.Add(post);
+            await _context.SaveChangesAsync();
+
+            var updateDto = new UpdateBlogPostDto { Title = "X", Content = "Y" };
+
+            // Act
+            var act = async () => await _service.UpdatePostAsync(post.Id, updateDto, _userId);
+
+            // Assert
+            await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        }
+
+        [Fact]
+        public async Task DeletePostAsync_ShouldThrowUnauthorized_WhenNotOwner()
+        {
+            // Arrange: create another user and a post owned by them
+            var otherUser = new Models.User
+            {
+                Username = "other3",
+                Email = "other3@example.com",
+                PasswordHash = "h",
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.Users.Add(otherUser);
+            await _context.SaveChangesAsync();
+
+            var post = new BlogPost
+            {
+                Title = "Delete Me",
+                Content = "No",
+                Author = otherUser.Username,
+                UserId = otherUser.Id,
+                User = otherUser,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.BlogPosts.Add(post);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var act = async () => await _service.DeletePostAsync(post.Id, _userId);
+
+            // Assert
+            await act.Should().ThrowAsync<UnauthorizedAccessException>();
+        }
+
+        [Fact]
+        public async Task GetPostByIdAsync_ShouldSetIsOwnerAndIncludeUser()
+        {
+            // Arrange
+            var post = new BlogPost
+            {
+                Title = "OwnerTest",
+                Content = "Content",
+                Author = _user.Username,
+                UserId = _userId,
+                User = _user,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.BlogPosts.Add(post);
+            await _context.SaveChangesAsync();
+
+            // Act
+            var asOwner = await _service.GetPostByIdAsync(post.Id, _userId);
+            var asOther = await _service.GetPostByIdAsync(post.Id, null);
+
+            // Assert
+            asOwner.Should().NotBeNull();
+            asOwner!.IsOwner.Should().BeTrue();
+            asOwner.User.Should().NotBeNull();
+            asOwner.User.Username.Should().Be(_user.Username);
+
+            asOther.Should().NotBeNull();
+            asOther!.IsOwner.Should().BeFalse();
         }
     }
 }
