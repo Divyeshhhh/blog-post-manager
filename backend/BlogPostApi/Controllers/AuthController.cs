@@ -92,7 +92,6 @@ namespace BlogPostApi.Controllers
             }
         }
 
-        [Authorize]
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<UserDto>> GetUserById(int userId)
         {
