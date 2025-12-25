@@ -107,7 +107,7 @@ The application delivers complete end-to-end CRUD functionality for blog posts, 
 
 - **Responsive Design**: Tailwind CSS ensures accessibility and mobile-friendly layouts.
 - **Search & Filtering**: Live search across post titles, content, and authors.
-- **Form Safeguards**: Character counters, validation hints, and unsaved-change warnings.
+- **Form Safeguards**: Character counters, validation hints, unsaved-change warnings, and a global toast notification system (ToastProvider) that replaces disruptive alert dialogs with consistent success/error feedback across the SPA.
 
 ### Additional Enhancements Beyond Baseline
 
@@ -221,7 +221,7 @@ The application delivers complete end-to-end CRUD functionality for blog posts, 
 cd backend\BlogPostApi.Tests
 dotnet test
 ```
-- Tests cover CRUD flows, ownership enforcement, and DTO mapping fidelity.
+- Tests cover CRUD flows, ownership enforcement, DTO mapping fidelity, plus API-level integration tests that spin up the WebApplicationFactory, seed in-memory databases, and exercise controller endpoints end to end.
 
 ---
 
