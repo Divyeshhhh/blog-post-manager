@@ -64,30 +64,6 @@ export const CreatePostPage: React.FC = () => {
             <BlogPostForm onSubmit={handleSubmit} onCancel={() => navigate('/')} />
           )}
         </div>
-
-        {/* Inspiration Section */}
-        <div className="mt-8 bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200">
-          <h3 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-            Need inspiration?
-          </h3>
-          <div className="grid md:grid-cols-3 gap-4 text-sm">
-            <div className="bg-white/70 rounded-lg p-3">
-              <p className="font-medium text-purple-800 mb-1">💭 Share a thought</p>
-              <p className="text-gray-600">What's on your mind today?</p>
-            </div>
-            <div className="bg-white/70 rounded-lg p-3">
-              <p className="font-medium text-purple-800 mb-1">📚 Tell a story</p>
-              <p className="text-gray-600">Everyone has a story to tell</p>
-            </div>
-            <div className="bg-white/70 rounded-lg p-3">
-              <p className="font-medium text-purple-800 mb-1">💡 Share knowledge</p>
-              <p className="text-gray-600">Help others learn something new</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

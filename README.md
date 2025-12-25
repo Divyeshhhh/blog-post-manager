@@ -149,6 +149,10 @@ The application delivers complete end-to-end CRUD functionality for blog posts, 
 
 ### Run with Docker Compose
 
+   > ⚠️ **Important**
+   >
+   > Make sure **Docker Desktop is running** before executing any `docker-compose` commands.
+
 1. From the repository root, build and start containers:
    ```powershell
    docker-compose up --build
